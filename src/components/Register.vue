@@ -48,10 +48,10 @@ export default {
   data() {
     return {
       userInfo: {
-        firstName: "safsa",
-        lastName: "asfsa",
-        email: "asfsa@safsa.com",
-        password: "123456",
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
       },
     };
   },

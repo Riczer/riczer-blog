@@ -34,7 +34,7 @@ export default {
   name: "Login",
   data() {
     return {
-      userInfo: { email: "ricardo@hotamail.com", password: "123456" },
+      userInfo: { email: "", password: "" },
     };
   },
   emits: ["login"],
