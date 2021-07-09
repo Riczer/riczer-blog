@@ -12,7 +12,7 @@
           <v-toolbar-title>Publicaciones</v-toolbar-title>
           <v-divider class="mx-4" inset vertical></v-divider>
           <v-spacer></v-spacer>
-          <v-dialog v-model="openNewPost" max-width="500px">
+          <v-dialog v-model="openDialog" max-width="500px">
             <template v-slot:activator="{ on, attrs }">
               <v-btn color="primary" dark v-bind="attrs" v-on="on">
                 Nuevo post
@@ -20,7 +20,7 @@
             </template>
             <v-card>
               <v-card-title>
-                <span class="text-h5">Nuevo post</span>
+                <span class="text-h5">{{ formTitle }}</span>
               </v-card-title>
 
               <v-card-text>
@@ -47,7 +47,7 @@
 
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="openNewPost = false">
+                <v-btn color="blue darken-1" text @click="openDialog = false">
                   Cancel
                 </v-btn>
                 <v-btn color="blue darken-1" text @click="save">
@@ -56,13 +56,37 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
+          <v-dialog v-model="openDeletePost" max-width="500px">
+            <v-card>
+              <v-card-title class="text-h5"
+                >¿Estás seguro que deseas borrar este post?</v-card-title
+              >
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn
+                  color="blue darken-1"
+                  text
+                  @click="openDeletePost = false"
+                  >Cancel</v-btn
+                >
+                <v-btn color="blue darken-1" text @click="deletePost">OK</v-btn>
+                <v-spacer></v-spacer>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </v-toolbar>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
-        <v-icon small class="mr-3" @click="editPost(item)">
+        <v-icon small class="mr-3" @click="editPost(item.id)">
           mdi-pencil
         </v-icon>
-        <v-icon small @click="editPost(item)">
+        <v-icon
+          small
+          @click="
+            openDeletePost = true;
+            selectedId = item.id;
+          "
+        >
           mdi-delete
         </v-icon>
       </template>
@@ -82,7 +106,10 @@ export default {
   data() {
     return {
       posts: [],
-      openNewPost: false,
+      openDialog: false,
+      openDeletePost: false,
+      action: "new",
+      selectedId: -1,
       editedPost: {
         title: "",
         description: "",
@@ -104,11 +131,12 @@ export default {
       ],
     };
   },
-
-  methods: {
-    editPost(post) {
-      console.log(post);
+  computed: {
+    formTitle() {
+      return this.action === "new" ? "Nuevo post" : "Editar post";
     },
+  },
+  methods: {
     async initialize() {
       const {
         response: { data },
@@ -120,11 +148,30 @@ export default {
       }
     },
     async save() {
-      const { status } = await postServices.addPost(this.newPost);
+      const { status } =
+        this.action === "new"
+          ? await postServices.addPost(this.newPost)
+          : await postServices.editPost({
+              id: this.selectedId,
+              post: this.newPost,
+            });
       if (status === 200) {
         this.initialize();
       }
-      this.openNewPost = false;
+      this.openDialog = false;
+      this.action = "new";
+    },
+    editPost(id) {
+      this.action = "edit";
+      this.selectedId = id;
+      this.openDialog = true;
+    },
+    async deletePost() {
+      const { status } = await postServices.deletePost(this.selectedId);
+      if (status === 200) {
+        this.initialize();
+      }
+      this.openDeletePost = false;
     },
   },
   created() {

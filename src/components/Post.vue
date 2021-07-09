@@ -12,7 +12,10 @@
         </p>
       </v-card-text>
       <v-card-actions class="pl-4">
-        <v-btn color="deep-purple lighten-2">
+        <v-btn
+          color="deep-purple lighten-2"
+          @click="$router.push(`/post/${post.id}`)"
+        >
           Leer más
         </v-btn>
       </v-card-actions>
